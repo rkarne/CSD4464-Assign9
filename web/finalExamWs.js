@@ -21,13 +21,31 @@
  =================================================================*/
 
 $(document).ready(function () {
-    var wsUri = "ws://localhost:8080/CPD4414-Final-2016W/socket";
-    var ws = new WebSocket(wsUri);
-    ws.onMessage = function (evt) {
+    var productsWsUri = "ws://localhost:8080/CPD4414-Final-2016W/productsSocket";
+    var pws = new WebSocket(productsWsUri);
+    var vendorsWsUri = "ws://localhost:8080/CPD4414-Final-2016W/vendorsSocket";
+    var vws = new WebSocket(vendorsWsUri);
+
+    pws.onmessage = function (evt) {
         if (typeof evt.data !== 'undefined') {
-            var json = $.parseJSON(evt.data);
-            if (typeof json.vendors !== 'undefined') {
-                var data = json.vendors;
+            var data = $.parseJSON(evt.data);
+            if (Array.isArray(data)) {
+                var result = '<tbody>';
+                result += "<tr><th>Product ID</th><th>Name</th><th>Vendor ID</th></tr>";
+                for (var i = 0; i < data.length; i++)
+                    result += '<tr><td>' + data[i].productId + '</td><td>' + data[i].name + '</td><td>' + data[i].vendorId + '</td></tr>';
+                result += '</tbody>';
+                $('#products').html(result);
+            } else {                
+                $('#productName').val(data.name);
+                $('#productVendor').val(data.vendorId);            
+            }
+        }
+    };
+    vws.onmessage = function (evt) {
+        if (typeof evt.data !== 'undefined') {
+            var data = $.parseJSON(evt.data);
+            if (Array.isArray(data)) {
                 var result = '<tbody>';
                 result += "<tr><th>Vendor ID</th><th>Name</th><th>Contact Name</th><th>Phone Number</th></tr>";
                 for (var i = 0; i < data.length; i++)
@@ -37,40 +55,38 @@ $(document).ready(function () {
                 result += '</tbody>';
                 $('#vendors').html(result);
             }
-            if (typeof json.products !== 'undefined') {
-                var data = json.products;
-                var result = '<tbody>';
-                result += "<tr><th>Product ID</th><th>Name</th><th>Vendor ID</th></tr>";
-                for (var i = 0; i < data.length; i++)
-                    result += '<tr><td>' + data[i].productId + '</td><td>' + data[i].name + '</td><td>' + data[i].vendorId + '</td></tr>';
-                result += '</tbody>';
-                $('#products').html(result);
+            else {                
+                $('#vendorName').val(data.name);
+                $('#vendorContact').val(data.contactName);
+                $('#vendorPhone').val(data.phoneNumber);            
             }
         }
     };
-    ws.onOpen = function (evt) {
-        ws.send(JSON.stringify({"get": "products"}));
-        ws.send(JSON.stringify({"get": "vendors"}));
+    pws.onopen = function (evt) {
+        pws.send(JSON.stringify({"get": "products"}));
     }
 
+    vws.onopen = function (evt) {
+        vws.send(JSON.stringify({"get": "vendors"}));
+    }
     $('#findProductById').click(function () {
-        ws.send(JSON.stringify({"get": "products", "id": $('#productId').val()}));
+        pws.send(JSON.stringify({"get": "products", "id": parseInt($('#productId').val())}));
     });
     $('#findProductByQuery').click(function () {
-        ws.send(JSON.stringify({"get": "products", "search": $('#productQuery').val()}));
+        pws.send(JSON.stringify({"get": "products", "search": $('#productQuery').val()}));
     });
     $('#deleteProductById').click(function () {
-        ws.send(JSON.stringify({"delete": "products", "id": $('#productId').val()}));
+        pws.send(JSON.stringify({"delete": "products", "id": parseInt($('#productId').val())}));
     });
     $('#addProduct').click(function () {
-        ws.send(JSON.stringify({post: "products",
+        pws.send(JSON.stringify({post: "products",
             data: {
                 name: $('#productName').val(),
                 vendorId: parseInt($('#productVendor').val())
             }}));
     });
     $('#setProduct').click(function () {
-        ws.send(JSON.stringify({put: "products",
+        pws.send(JSON.stringify({put: "products",
             data: {
                 productId: parseInt($('#productId').val()),
                 name: $('#productName').val(),
@@ -78,26 +94,26 @@ $(document).ready(function () {
             }}));
     });
     $('#findVendorById').click(function () {
-        ws.send(JSON.stringify({"get": "vendors", "id": $('#vendorId').val()}));
+        vws.send(JSON.stringify({"get": "vendors", "id": parseInt($('#vendorId').val())}));
     });
     $('#findVendorByQuery').click(function () {
-        ws.send(JSON.stringify({"get": "vendors", "search": $('#vendorQuery').val()}));
+        vws.send(JSON.stringify({"get": "vendors", "search": $('#vendorQuery').val()}));
     });
     $('#deleteVendorById').click(function () {
-        ws.send(JSON.stringify({"delete": "vendors", "id": $('#vendorId').val()}));
+        vws.send(JSON.stringify({"delete": "vendors", "id": parseInt($('#vendorId').val())}));
     });
     $('#addVendor').click(function () {
-        ws.send(JSON.stringify({post: "vendors",
+        vws.send(JSON.stringify({post: "vendors",
             data: {
                 name: $('#vendorName').val(),
                 contactName: $('#vendorContact').val(),
                 phoneNumber: $('#vendorPhone').val()
             }}));
     });
-    $('#setProduct').click(function () {
-        ws.send(JSON.stringify({put: "vendors",
+    $('#setVendor').click(function () {
+        vws.send(JSON.stringify({put: "vendors",
             data: {
-                vendorId: parseInt($('#productVendor').val()),
+                vendorId: parseInt($('#vendorId').val()),
                 name: $('#vendorName').val(),
                 contactName: $('#vendorContact').val(),
                 phoneNumber: $('#vendorPhone').val()

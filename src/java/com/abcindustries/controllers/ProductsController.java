@@ -29,7 +29,7 @@ import javax.json.JsonObject;
 
 /**
  *
- * @author Len Payne <len.payne@lambtoncollege.ca>
+ * @author <ENTER YOUR NAME HERE>
  */
 @ApplicationScoped
 public class ProductsController {

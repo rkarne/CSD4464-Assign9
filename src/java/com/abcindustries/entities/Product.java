@@ -37,9 +37,9 @@ public class Product {
     }
     
     public Product(JsonObject json) {
-        productId = json.getInt("productId");
-        name = json.getString("name");
-        vendorId = json.getInt("vendorId");
+        productId = json.getInt("productId", 0);
+        name = json.getString("name", "");
+        vendorId = json.getInt("vendorId", 0);
     }
 
     public int getProductId() {

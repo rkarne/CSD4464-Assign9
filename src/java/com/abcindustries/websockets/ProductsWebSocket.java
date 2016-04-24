@@ -16,6 +16,7 @@
 package com.abcindustries.websockets;
 
 import com.abcindustries.controllers.ProductsController;
+import java.io.IOException;
 import java.io.StringReader;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -27,24 +28,28 @@ import javax.websocket.server.ServerEndpoint;
 
 /**
  *
- * @author Len Payne <len.payne@lambtoncollege.ca>
+ * @author <ENTER YOUR NAME HERE>
  */
-@ServerEndpoint("/socket")
+@ServerEndpoint("/productsSocket")
 @ApplicationScoped
-public class ABCWebSocket {
+public class ProductsWebSocket {
 
     @Inject
     ProductsController products;
 
     // TODO: Inject the VendorsController as well
     @OnMessage
-    public void onMessage(String message, Session session) {
+    public void onMessage(String message, Session session) throws IOException {
         String output = "";
         JsonObject json = Json.createReader(new StringReader(message)).readObject();
         if (json.containsKey("get")) {
             if (json.getString("get").equals("products")) {
                 output = products.getAllJson().toString();
             }
+        } else if (json.containsKey("post") && json.getString("post").equals("products")) {
+            JsonObject productJson = json.getJsonObject("data");
+            products.addJson(productJson);
+            output = products.getAllJson().toString();
         } // TODO: Capture all the other messages defined on the WebSockets API
         else {
             output = Json.createObjectBuilder()
