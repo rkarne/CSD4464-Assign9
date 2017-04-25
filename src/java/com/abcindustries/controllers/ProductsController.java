@@ -18,6 +18,7 @@ package com.abcindustries.controllers;
 import com.abcindustries.entities.Product;
 import com.abcindustries.utilities.DBUtils;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,7 +30,7 @@ import javax.json.JsonObject;
 
 /**
  *
- * @author <ENTER YOUR NAME HERE>
+ * @author Roja Jayashree Karne
  */
 @ApplicationScoped
 public class ProductsController {
@@ -40,8 +41,26 @@ public class ProductsController {
         retrieveAllProducts();
     }
 
-    public void retrieveAllProducts() {
+    private void retrieveAllProducts() {
         // TODO: Make a call that retrieves all the Products from the Database
+        
+         try {
+            Connection conn = DBUtils.getConnection();
+            productList = new ArrayList<>();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM Products");
+            while (rs.next()) {
+                Product p = new Product();
+                p.setName(rs.getString("Name"));
+                p.setProductId(rs.getInt("ProductId"));
+                p.setVendorId(rs.getInt("VendorId"));
+                productList.add(p);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ProductsController.class.getName()).log(Level.SEVERE, null, ex);
+            productList = new ArrayList<>();
+        }
+        
     }
 
     public void persistToDb(Product p) {
@@ -74,6 +93,18 @@ public class ProductsController {
 
     public void removeFromDb(Product p) {
         // TODO: Make a call that deletes a single Product from the database
+        try {
+            if (p.getProductId() >= 0) {
+                Connection conn = DBUtils.getConnection();
+                String sql = "DELETE FROM Products WHERE ProductId = ?";
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+                pstmt.setInt(1, p.getProductId());
+                pstmt.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ProductsController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        retrieveAllProducts();
     }
 
     public List<Product> getAll() {
@@ -82,9 +113,15 @@ public class ProductsController {
 
     public JsonArray getAllJson() {
         // TODO: Build a JsonArray object from the List
-        return null;
+         JsonArrayBuilder json = Json.createArrayBuilder();
+         for(Product pro : productList){
+             json.add(pro.toJson());
+         }  
+        return json.build();
+       
     }
-
+    
+    
     public Product getById(int id) {
         Product result = null;
         for (Product p : productList) {
@@ -118,11 +155,19 @@ public class ProductsController {
 
     public JsonObject editJson(int id, JsonObject json) {
         // TODO: Input the JsonObject at the specified id if it already exists
-        return null;
+        Product p = getById(id);
+        //p.setProductId(json.getInt("productId"));
+        p.setName(json.getString("name"));
+        p.setVendorId(json.getInt("vendorId"));
+        persistToDb(p);
+        return p.toJson();
     }
 
     public JsonObject delete(int id) {
         // TODO: Remember to delete from both the List and the DB
-        return null;
+        Product p=getById(id);
+        productList.remove(p);
+        removeFromDb(p);
+        return p.toJson();
     }
 }

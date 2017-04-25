@@ -20,7 +20,7 @@ import javax.json.JsonObject;
 
 /**
  *
- * @author <ENTER YOUR NAME HERE>
+ * @author Roja Jayashree Karne
  */
 public class Product {
     private int productId;

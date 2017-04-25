@@ -16,6 +16,7 @@
 package com.abcindustries.websockets;
 
 import com.abcindustries.controllers.ProductsController;
+import com.abcindustries.controllers.VendorsController;
 import java.io.IOException;
 import java.io.StringReader;
 import javax.enterprise.context.ApplicationScoped;
@@ -28,7 +29,7 @@ import javax.websocket.server.ServerEndpoint;
 
 /**
  *
- * @author <ENTER YOUR NAME HERE>
+ * @author Roja Jayashree Karne
  */
 @ServerEndpoint("/productsSocket")
 @ApplicationScoped
@@ -38,6 +39,9 @@ public class ProductsWebSocket {
     ProductsController products;
 
     // TODO: Inject the VendorsController as well
+    @Inject 
+    VendorsController vendors;
+            
     @OnMessage
     public void onMessage(String message, Session session) throws IOException {
         String output = "";
@@ -51,6 +55,16 @@ public class ProductsWebSocket {
             products.addJson(productJson);
             output = products.getAllJson().toString();
         } // TODO: Capture all the other messages defined on the WebSockets API
+        else if (json.containsKey("put") && json.getString("put").equals("products")) {
+            JsonObject productJson = json.getJsonObject("data");
+            products.editJson(productJson.getInt("productId"), productJson);
+            output = products.getAllJson().toString();
+        }
+        else if (json.containsKey("delete") && json.getString("delete").equals("products")) {
+            int id = json.getInt("id");
+            products.delete(id);
+            output = products.getAllJson().toString();
+        }
         else {
             output = Json.createObjectBuilder()
                     .add("error", "Invalid Request")
@@ -59,6 +73,7 @@ public class ProductsWebSocket {
         }
 
         // TODO: Return the output string to the user that sent the message
+        session.getBasicRemote().sendText(output);
     }
 
 }

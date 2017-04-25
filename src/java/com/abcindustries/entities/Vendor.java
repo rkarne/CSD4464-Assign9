@@ -15,10 +15,77 @@
  */
 package com.abcindustries.entities;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+
 /**
  *
- * @author <ENTER YOUR NAME HERE>
+ * @author Roja Jayashree Karne
  */
 public class Vendor {
     // TODO: Create this entity based on the documentation provided
+    
+    private int vendorId;
+    private String name;
+    private String contactName;
+    private String phoneNumber;
+    
+    public Vendor(){
+        
+    }
+    
+    public Vendor(int vendorid, String name, String contact, String phone){
+        this.vendorId = vendorid;
+        this.name = name;
+        this.contactName = contact;
+        this.phoneNumber = phone;
+    }
+    
+     public Vendor(JsonObject json) {
+        vendorId = json.getInt("vendorId", 0);
+        name = json.getString("name", "");
+        contactName = json.getString("contactName", "");
+        phoneNumber = json.getString("phoneNumber","");
+    }
+
+    public int getVendorId() {
+        return vendorId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getContactName() {
+        return contactName;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setVendorId(int vendorId) {
+        this.vendorId = vendorId;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setContactName(String contactName) {
+        this.contactName = contactName;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+     
+      public JsonObject toJson() {
+        return Json.createObjectBuilder()
+                .add("vendorId", vendorId)
+                .add("name", name)
+                .add("contactName", contactName)
+                .add("phoneNumber", phoneNumber)
+                .build();
+    }
 }
